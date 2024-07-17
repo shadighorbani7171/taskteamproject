@@ -16,6 +16,11 @@ use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Actions\DeleteBulkAction;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\MultiSelect;
 
 class TaskResource extends Resource
 {
@@ -23,24 +28,37 @@ class TaskResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+   
+
     public static function form(Form $form): Form
     {
         return $form
-        ->schema([
-            Forms\Components\Select::make('team_id')
-                ->label('Team')
-                ->relationship('team', 'name')
-                ->options(Team::pluck('name', 'id')->toArray())
-                ->required(),
-            Forms\Components\TextInput::make('name')
-                ->required()
-                ->maxLength(255),
-            Forms\Components\Textarea::make('description'),
-            Forms\Components\MultiSelect::make('users')
-                ->relationship('users', 'name')
-                ->options(User::pluck('name', 'id')->toArray())
-                ->label('Users')
-        ]);
+            ->schema([
+                Select::make('team_id')
+                    ->label('Team')
+                    ->relationship('team', 'name')
+                    ->options(Team::pluck('name', 'id')->toArray())
+                    ->required(),
+                TextInput::make('name')
+                    ->required()
+                    ->maxLength(255),
+                Textarea::make('description'),
+                DatePicker::make('due_date')
+                    ->label('Due Date')
+                    ->required(),
+                Select::make('status')
+                    ->options([
+                        'in progress' => 'In Progress',
+                        'completed' => 'Completed',
+                        'needs review' => 'Needs Review',
+                    ])
+                    ->default('in progress')
+                    ->required(),
+                MultiSelect::make('users')
+                    ->relationship('users', 'name')
+                    ->options(User::pluck('name', 'id')->toArray())
+                    ->label('Users')
+            ]);
     }
 
     public static function table(Table $table): Table
@@ -51,6 +69,12 @@ class TaskResource extends Resource
                 TextColumn::make('team.name')->label('Team')->sortable()->searchable(),
                 TextColumn::make('name')->sortable()->searchable(),
                 TextColumn::make('description')->sortable()->searchable(),
+                TextColumn::make('due_date')
+                    ->label('Due Date')
+                    ->sortable(),
+                TextColumn::make('status')
+                    ->label('Status')
+                    ->sortable(),
                 TextColumn::make('users.name')
                     ->label('Users')
                     ->sortable()
