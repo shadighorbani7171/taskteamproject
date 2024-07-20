@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Spatie\Permission\Middleware\RoleMiddleware;
+use Spatie\Permission\Middleware\PermissionMiddleware;
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OwnerDashboardController;
@@ -11,11 +12,13 @@ use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ChatRoomController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MemberDashboardController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UserController;
 
     
 
 
-use Spatie\Permission\Middlewares\PermissionMiddleware;
+
 
 
 Route::get('/', function () {
@@ -45,27 +48,30 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
                 return redirect()->route('admin.dashboard');
             case 'owner':
                 return redirect()->route('owner.dashboard');
-            case 'member':
-                return redirect()->route('dashboard');
             default:
                 return view('dashboard');
         }
-    });
+    })->name('dashboard');
 
     Route::middleware(['role:super_admin'])->group(function () {
         Route::get('/admindashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     });
 
-    Route::middleware(['role:owner', 'permission:view ownerdashboard'])->group(function () {
+    Route::middleware(['role:owner'])->group(function () {
         Route::get('/ownerdashboard', [OwnerDashboardController::class, 'index'])->name('owner.dashboard');
     });
-
-    Route::get('/dashboard', [MemberDashboardController::class, 'index'])->name('dashboard');
 
     Route::post('/projects/{project}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::resource('projects', ProjectController::class);
     Route::resource('teams', TeamController::class);
-
+   
+    Route::middleware(['auth'])->group(function () {
+        Route::resource('tasks', TaskController::class);
+        Route::post('tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
+        Route::post('tasks/{task}/comment', [TaskController::class, 'addComment'])->name('tasks.addComment');
+    });
+    Route::resource('users',UserController::class);
+   
     Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/chats', [ChatRoomController::class, 'index'])->name('chats.index');
         Route::post('/chats', [ChatRoomController::class, 'store'])->name('chats.store');

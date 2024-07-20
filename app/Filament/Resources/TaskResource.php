@@ -1,13 +1,13 @@
 <?php
 
-
-
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\TaskResource\Pages;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
+use App\Models\Project; // اضافه کردن مدل Project
+use App\Models\Subtask; // اضافه کردن مدل Subtask
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -21,14 +21,13 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\MultiSelect;
+use Filament\Forms\Components\HasManyRepeater; // اضافه کردن HasManyRepeater
 
 class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-
-   
 
     public static function form(Form $form): Form
     {
@@ -57,7 +56,26 @@ class TaskResource extends Resource
                 MultiSelect::make('users')
                     ->relationship('users', 'name')
                     ->options(User::pluck('name', 'id')->toArray())
-                    ->label('Users')
+                    ->label('Users'),
+                Select::make('project_id')
+                    ->label('Project')
+                    ->relationship('project', 'name')
+                    ->options(Project::pluck('name', 'id')->toArray())
+                    ->nullable(), // پروژه می‌تواند null باشد
+                HasManyRepeater::make('subtasks') // اضافه کردن بخش Subtasks
+                    ->relationship('subtasks')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Subtask Name')
+                            ->required(),
+                        Select::make('user_id')
+                            ->label('User')
+                            ->relationship('user', 'name')
+                            ->options(User::pluck('name', 'id')->toArray())
+                            ->nullable(), // کاربر می‌تواند null باشد
+                    ])
+                    ->label('Subtasks')
+                    ->collapsed(),
             ]);
     }
 
@@ -77,6 +95,10 @@ class TaskResource extends Resource
                     ->sortable(),
                 TextColumn::make('users.name')
                     ->label('Users')
+                    ->sortable()
+                    ->searchable(),
+                TextColumn::make('project.name')
+                    ->label('Project')
                     ->sortable()
                     ->searchable(),
             ])

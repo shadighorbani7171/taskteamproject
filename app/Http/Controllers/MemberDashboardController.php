@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class MemberDashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     public function index()
     {
         $user = auth()->user();
@@ -21,4 +26,3 @@ class MemberDashboardController extends Controller
         return view('dashboard', compact('teams', 'tasks', 'projects'));
     }
 }
-

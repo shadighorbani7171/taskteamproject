@@ -15,6 +15,7 @@ use Filament\Models\Contracts\FilamentUser;
 
 
 
+
 class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens;
@@ -71,6 +72,10 @@ class User extends Authenticatable implements FilamentUser
         ];
     }
 
+   
+
+
+
 
     public function teams()
     {
@@ -99,5 +104,14 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->belongsToMany(ChatRoom::class, 'chat_room_user', 'user_id', 'chat_room_id');
     }
+    public function subtasks()
+    {
+        return $this->hasMany(Subtask::class, 'user_id');
+    }
+    
+     
+    // Rest omitted for brevity
+
+   
 }
 

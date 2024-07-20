@@ -5,33 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Team;
-use App\Models\User;
-
 
 class TeamController extends Controller
 {
-   
-
-    public function index(Request $request)
+    public function index()
     {
-        $user = $request->user();
-        $role = $user->getRoleNames()->first();
-
-        switch ($role) {
-            case 'super_admin':
-                $teams = Team::with(['projects', 'users'])->get();
-                break;
-            case 'owner':
-                $teams = Team::with(['projects', 'users'])->where('owner_id', $user->id)->get();
-                break;
-            default:
-                $teams = Team::with(['projects', 'users'])->whereHas('users', function ($query) use ($user) {
-                    $query->where('users.id', $user->id);
-                })->get();
-                break;
-        }
-
-        return response()->json($teams);
+       $team = Team::all();
+       return response()->json($team);
     }
 
     public function store(Request $request)
@@ -47,7 +27,7 @@ class TeamController extends Controller
 
     public function show($id)
     {
-        $team = Team::with(['projects', 'users'])->findOrFail($id);
+        $team = Team::findOrFail($id);
         return response()->json($team);
     }
 
@@ -71,3 +51,4 @@ class TeamController extends Controller
         return response()->json(null, 204);
     }
 }
+

@@ -4,25 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\Comment;
 use App\Models\Project;
-use App\Http\Requests\CommentRequest; 
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
-    public function store(CommentRequest $request, Project $project)
+    public function store(Request $request, Project $project)
     {
-        $comment = new Comment();
-        $comment->project_id = $project->id;
-        $comment->user_id = $request->user()->id;
-        $comment->content = $request->input('content');
-        $comment->url = $request->input('url') ?? null;
+        $request->validate([
+            'content' => 'required|string|max:255',
+        ]);
 
-        if ($request->hasFile('file')) {
-            $comment->file_path = $request->file('file')->store('comments');
+        $user = auth()->user();
+        $isMember = $project->teams->pluck('users')->flatten()->contains('id', $user->id);
+
+        if (!$isMember) {
+            abort(403, 'Unauthorized action.');
         }
 
+        $comment = new Comment();
+        $comment->project_id = $project->id;
+        $comment->user_id = $user->id;
+        $comment->content = $request->input('content');
         $comment->save();
 
-        return redirect()->back()->with('success', 'Comment added successfully.');
+        return redirect()->route('projects.show', $project)->with('success', 'Comment added successfully.');
     }
 }
+
+

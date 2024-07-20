@@ -19,15 +19,12 @@
                 <x-nav-link href="{{ route('chats.index') }}" :active="request()->routeIs('chats.*')">
                   {{ __('Chats') }}
                   </x-nav-link>
-                    <x-nav-link href="{{ route('projects.index') }}" :active="request()->routeIs('projects.*')">
-                {{ __('Projects') }}
-              </x-nav-link>
-              <x-nav-link href="{{ route('teams.index') }}" :active="request()->routeIs('teams.*')">
-                {{ __('Teams') }}
-                </x-nav-link>
+                  
+             
                 <x-nav-link href="{{ url('/setting') }}" :active="request()->routeIs('teams.*')">
                 {{ __('Setting') }}
                 </x-nav-link>
+               
             </div>
 
             <div class="hidden sm:flex sm:items-center sm:ms-6">

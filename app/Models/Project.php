@@ -19,11 +19,15 @@ class Project extends Model
 
     public function teams()
     {
-        return $this->belongsToMany(Team::class, 'project_team');
+        return $this->belongsToMany(Team::class, 'project_team', 'project_id', 'team_id');
     }
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
     }
     
 }
