@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('comments', function (Blueprint $table) {
             
             $table->id();
-            $table->unsignedBigInteger('project_id');
+            $table->unsignedBigInteger('project_id')->nullable();
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('task_id')->nullable();
+
             $table->text('content');
-            $table->string('url')->nullable();
-            $table->string('file_path')->nullable();
+           
             $table->timestamps();
             
         });

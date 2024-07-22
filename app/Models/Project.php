@@ -29,5 +29,9 @@ class Project extends Model
     {
         return $this->hasMany(Task::class);
     }
+    public function resources()
+    {
+        return $this->belongsToMany(Resource::class, 'project_resource', 'project_id', 'resource_id');
+    }
     
 }

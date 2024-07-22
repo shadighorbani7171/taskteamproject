@@ -6,7 +6,7 @@ use Spatie\Permission\Middleware\PermissionMiddleware;
 
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\OwnerDashboardController;
-use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CommentprojectController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\ChatRoomController;
@@ -14,6 +14,12 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MemberDashboardController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ResourceAllocationController;
+
+
+
 
     
 
@@ -61,16 +67,26 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/ownerdashboard', [OwnerDashboardController::class, 'index'])->name('owner.dashboard');
     });
 
-    Route::post('/projects/{project}/comments', [CommentController::class, 'store'])->name('comments.store');
     Route::resource('projects', ProjectController::class);
+    Route::post('/projects/{project}/comments', [CommentprojectController::class, 'store'])->name('projects.comments.store');
+    
     Route::resource('teams', TeamController::class);
    
-    Route::middleware(['auth'])->group(function () {
-        Route::resource('tasks', TaskController::class);
-        Route::post('tasks/{task}/complete', [TaskController::class, 'complete'])->name('tasks.complete');
-        Route::post('tasks/{task}/comment', [TaskController::class, 'addComment'])->name('tasks.addComment');
+    Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+        Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
+        Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
+        Route::post('/tasks/{task}/comments', [TaskController::class, 'addComment'])->name('tasks.addComment');
+        Route::post('/tasks/{task}/upload-folder', [TaskController::class, 'uploadFolder'])->name('tasks.uploadFolder');
     });
+   
     Route::resource('users',UserController::class);
+
+    Route::get('/resources', [ResourceAllocationController::class, 'index'])->name('resources.index');
+    
+    
+
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
    
     Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         Route::get('/chats', [ChatRoomController::class, 'index'])->name('chats.index');

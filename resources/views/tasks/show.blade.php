@@ -13,25 +13,46 @@
                     <h3 class="text-lg font-medium text-gray-900">{{ $task->name }}</h3>
                     <p class="text-gray-600">{{ $task->description }}</p>
 
-                    <div class="flex items-center mt-4">
-                        @foreach($task->users as $user)
-                            <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full border-2 border-white -ml-2">
-                        @endforeach
-                        <button class="bg-gray-200 text-gray-800 px-2 py-1 rounded-full ml-2">+</button>
+                    <div class="mt-4">
+                        <span class="text-sm font-medium text-gray-700">Team Members:</span>
+                        <div class="flex items-center">
+                            @foreach($task->users as $user)
+                                <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full border-2 border-white -ml-2">
+                            @endforeach
+                        </div>
                     </div>
 
                     <div class="mt-4">
-                        @if($task->total_subtasks > 0)
+                        <span class="text-sm font-medium text-gray-700">Project:</span>
+                        <p class="text-gray-600">{{ $task->project ? $task->project->name : 'No project assigned' }}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="text-sm font-medium text-gray-700">Start Time:</span>
+                        <p class="text-gray-600">{{ $task->start_time }}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="text-sm font-medium text-gray-700">End Time:</span>
+                        <p class="text-gray-600">{{ $task->end_time ?? 'Not set' }}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <span class="text-sm font-medium text-gray-700">Status:</span>
+                        <p class="text-gray-600">{{ $task->is_completed ? 'Completed' : 'In Progress' }}</p>
+                    </div>
+
+                    <div class="mt-4">
+                        @if($task->subtasks->count() > 0)
                             <div class="flex items-center">
                                 <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                                    <div class="bg-green-500 h-2.5 rounded-full" style="width: {{ ($task->completed_subtasks / $task->total_subtasks) * 100 }}%"></div>
+                                    <div class="bg-green-500 h-2.5 rounded-full" style="width: {{ ($task->subtasks->where('is_completed', true)->count() / $task->subtasks->count()) * 100 }}%"></div>
                                 </div>
-                                <span class="ml-2 text-gray-600">{{ $task->completed_subtasks }}/{{ $task->total_subtasks }}</span>
+                                <span class="ml-2 text-gray-600">{{ $task->subtasks->where('is_completed', true)->count() }}/{{ $task->subtasks->count() }}</span>
                             </div>
                         @else
                             <span class="text-gray-600">No subtasks available</span>
                         @endif
-                        <span class="text-sm text-gray-500">Due in {{ $task->due_time }}</span>
                     </div>
 
                     <div class="mt-6">
@@ -50,10 +71,15 @@
                                     <img src="{{ $comment->user->profile_photo_url }}" alt="{{ $comment->user->name }}" class="w-10 h-10 rounded-full">
                                     <div class="ml-4">
                                         <p class="text-sm text-gray-600">
-                                            <span class="font-medium text-gray-900">{{ $comment->user->name }}</span> 
-                                            {{ $comment->content }}
-                                            @if($comment->file_path)
-                                                <a href="{{ Storage::url($comment->file_path) }}" target="_blank" class="text-blue-500 underline">View File</a>
+                                            <strong>{{ $comment->user->name }}:</strong> {{ $comment->content }}
+                                            @if($comment->files->count() > 0)
+                                                <br>
+                                                <strong>Attachments:</strong>
+                                                <ul>
+                                                    @foreach($comment->files as $file)
+                                                        <li><a href="{{ $file->url }}" target="_blank">{{ $file->name }}</a></li>
+                                                    @endforeach
+                                                </ul>
                                             @endif
                                         </p>
                                         <p class="text-xs text-gray-500">{{ $comment->created_at->diffForHumans() }}</p>
@@ -64,22 +90,86 @@
                     </div>
 
                     <div class="mt-6">
-                        <form method="POST" action="{{ route('tasks.addComment', $task) }}" enctype="multipart/form-data">
+                        <h4 class="text-lg font-medium text-gray-900">{{ __('Files') }}</h4>
+                        <ul>
+                            @foreach($task->files as $file)
+                                <li>
+                                    <a href="{{ $file->url }}" target="_blank">{{ $file->name }}</a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <div class="mt-6">
+                        <form id="uploadForm" action="{{ route('tasks.uploadFolder', $task) }}" method="post" enctype="multipart/form-data">
                             @csrf
-                            <textarea name="content" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Add a new comment..."></textarea>
-                            <input type="file" name="file" class="mt-2">
-                            <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">Add Comment</button>
+                            <label for="picker">Select folder to upload:</label>
+                            <input type="file" id="picker" webkitdirectory multiple class="mt-2">
+                            <input type="submit" value="Upload Folder" name="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
                         </form>
                     </div>
 
                     <div class="mt-6">
-                        <form method="POST" action="{{ route('tasks.complete', $task) }}">
+                        <form id="commentUploadForm" action="{{ route('tasks.addComment', $task) }}" method="post" enctype="multipart/form-data">
                             @csrf
-                            <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Complete Task</button>
+                            <label for="commentPicker">Select file to upload with comment:</label>
+                            <input type="file" id="commentPicker" multiple class="mt-2">
+                            <textarea name="content" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Add a new comment..."></textarea>
+                            <input type="submit" value="Add Comment" name="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('picker').addEventListener('change', function(e) {
+            const form = document.getElementById('uploadForm');
+            const formData = new FormData(form);
+            
+            for (let i = 0; i < this.files.length; i++) {
+                let file = this.files[i];
+                formData.append('files[]', file, file.webkitRelativePath);
+            }
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }).then(response => {
+                  location.reload(); // Reload the page to show the uploaded files
+              }).catch(error => {
+                  console.error(error);
+              });
+            
+            e.preventDefault();
+        });
+
+        document.getElementById('commentPicker').addEventListener('change', function(e) {
+            const form = document.getElementById('commentUploadForm');
+            const formData = new FormData(form);
+            
+            for (let i = 0; i < this.files.length; i++) {
+                let file = this.files[i];
+                formData.append('files[]', file);
+            }
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            }).then(response => {
+                  location.reload(); // Reload the page to show the uploaded files and comments
+              }).catch(error => {
+                  console.error(error);
+              });
+            
+            e.preventDefault();
+        });
+    </script>
 </x-app-layout>

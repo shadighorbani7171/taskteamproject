@@ -22,15 +22,24 @@
                     <h4 class="mt-4 text-md font-semibold text-gray-700">Comments</h4>
                     <ul class="list-disc pl-5">
                         @foreach ($project->comments as $comment)
-                            <li>{{ $comment->content }} - <strong>{{ $comment->user->name }}</strong></li>
+                            <li>
+                                {{ $comment->content }} - <strong>{{ $comment->user->name }}</strong>
+                              
+                            </li>
                         @endforeach
                     </ul>
 
-                    <form action="{{ route('comments.store', $project) }}" method="POST" class="mt-4">
+                    <form action="{{ route('projects.comments.store', $project) }}" method="POST" class="mt-4" enctype="multipart/form-data">
                         @csrf
                         <div>
                             <textarea name="content" rows="3" class="w-full border rounded-md" placeholder="Add a comment..."></textarea>
                             @error('content')
+                                <div class="text-red-600">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mt-2">
+                            <input type="file" name="file" class="w-full border rounded-md">
+                            @error('file')
                                 <div class="text-red-600">{{ $message }}</div>
                             @enderror
                         </div>

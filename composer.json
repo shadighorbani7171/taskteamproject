@@ -9,7 +9,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "arielmejiadev/larapex-charts": "^2.1",
         "bezhansalleh/filament-shield": "^3.2",
+        "consoletvs/charts": "^6.7",
         "filament/filament": "^3.2",
         "filament/forms": "^3.2",
         "filament/notifications": "^3.2",
@@ -19,6 +21,7 @@
         "laravel/jetstream": "^5.1",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
+        "league/flysystem-aws-s3-v3": "3.0",
         "livewire/livewire": "^3.0",
         "nesbot/carbon": "^3.7",
         "spatie/laravel-permission": "^6.9",

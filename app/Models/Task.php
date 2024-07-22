@@ -9,9 +9,22 @@ use Carbon\Carbon;
 class Task extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description', 'team_id', 'project_id', 'due_date', 'status'];
-    protected $dates = ['due_date'];
+    protected $fillable = ['name', 'description','team_id','project_id' ,'start_time', 'end_time', 'is_completed'];
+  
+    protected static function boot()
+    {
+        parent::boot();
 
+        static::creating(function ($model) {
+            $model->is_completed = false;
+        });
+
+        static::updating(function ($model) {
+            if ($model->is_completed) {
+                $model->end_time = now();
+            }
+        });
+    }
     public function project()
     {
         return $this->belongsTo(Project::class);
@@ -56,5 +69,13 @@ class Task extends Model
     {
         return Carbon::now()->diffForHumans($this->due_date, true);
     }
+    public function resources()
+    {
+        return $this->belongsToMany(Resource::class, 'task_resource');
+    }
+    public function files()
+{
+    return $this->hasMany(File::class);
+}
 }
 

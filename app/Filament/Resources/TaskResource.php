@@ -6,8 +6,8 @@ use App\Filament\Resources\TaskResource\Pages;
 use App\Models\Task;
 use App\Models\Team;
 use App\Models\User;
-use App\Models\Project; // اضافه کردن مدل Project
-use App\Models\Subtask; // اضافه کردن مدل Subtask
+use App\Models\Project;
+use App\Models\Subtask;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -19,9 +19,9 @@ use Filament\Tables\Actions\DeleteBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\MultiSelect;
-use Filament\Forms\Components\HasManyRepeater; // اضافه کردن HasManyRepeater
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\HasManyRepeater;
+use Filament\Forms\Components\Select; // اضافه کردن ایمپورت Select
 
 class TaskResource extends Resource
 {
@@ -42,27 +42,21 @@ class TaskResource extends Resource
                     ->required()
                     ->maxLength(255),
                 Textarea::make('description'),
-                DatePicker::make('due_date')
-                    ->label('Due Date')
+                DatePicker::make('start_time')
+                    ->label('Start Time')
                     ->required(),
-                Select::make('status')
-                    ->options([
-                        'in progress' => 'In Progress',
-                        'completed' => 'Completed',
-                        'needs review' => 'Needs Review',
-                    ])
-                    ->default('in progress')
-                    ->required(),
-                MultiSelect::make('users')
-                    ->relationship('users', 'name')
-                    ->options(User::pluck('name', 'id')->toArray())
-                    ->label('Users'),
+                DatePicker::make('end_time')
+                    ->label('End Time')
+                    ->nullable(),
+                Toggle::make('is_completed')
+                    ->label('Is Completed')
+                    ->default(false),
                 Select::make('project_id')
                     ->label('Project')
                     ->relationship('project', 'name')
                     ->options(Project::pluck('name', 'id')->toArray())
-                    ->nullable(), // پروژه می‌تواند null باشد
-                HasManyRepeater::make('subtasks') // اضافه کردن بخش Subtasks
+                    ->nullable(), 
+                HasManyRepeater::make('subtasks')
                     ->relationship('subtasks')
                     ->schema([
                         TextInput::make('name')
@@ -87,10 +81,13 @@ class TaskResource extends Resource
                 TextColumn::make('team.name')->label('Team')->sortable()->searchable(),
                 TextColumn::make('name')->sortable()->searchable(),
                 TextColumn::make('description')->sortable()->searchable(),
-                TextColumn::make('due_date')
-                    ->label('Due Date')
+                TextColumn::make('start_time')
+                    ->label('Start Time')
                     ->sortable(),
-                TextColumn::make('status')
+                TextColumn::make('end_time')
+                    ->label('End Time')
+                    ->sortable(),
+                TextColumn::make('is_completed')
                     ->label('Status')
                     ->sortable(),
                 TextColumn::make('users.name')
@@ -103,7 +100,7 @@ class TaskResource extends Resource
                     ->searchable(),
             ])
             ->filters([
-                // Add filters if needed
+                // اضافه کردن فیلترها در صورت نیاز
             ])
             ->actions([
                 EditAction::make(),
@@ -116,7 +113,7 @@ class TaskResource extends Resource
     public static function getRelations(): array
     {
         return [
-            // Add any relation managers if needed
+            
         ];
     }
 

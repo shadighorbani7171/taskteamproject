@@ -17,6 +17,12 @@ return new class extends Migration
             $table->string('name');
             $table->text('description')->nullable();
             $table->unsignedBigInteger('team_id');
+            $table->unsignedBigInteger('project_id')->nullable();
+            $table->timestamp('start_time')->nullable();
+            $table->timestamp('end_time')->nullable();
+            $table->boolean('is_completed')->default(false);
+            
+
             $table->timestamps();
         });
     }

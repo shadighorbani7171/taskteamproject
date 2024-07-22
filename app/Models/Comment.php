@@ -11,11 +11,13 @@ class Comment extends Model
     use HasFactory;
     protected $fillable = [
         'project_id',
+        'task_id',
         'user_id',
         'content',
-        'url',
-        'file_path',
+      
     ];
+  
+   
 
     public function user()
     {
@@ -25,5 +27,12 @@ class Comment extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+    public function task(){
+        return $this->belongsTo(Task::class);
+    }
+    public function files()
+    {
+        return $this->hasMany(File::class);
     }
 }

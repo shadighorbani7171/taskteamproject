@@ -4,37 +4,24 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Comment;
+use App\Models\File;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class TaskController extends Controller
 {
     public function index()
     {
-        $role = auth()->user()->getRoleNames()->first();
-
-        if ($role == 'super_admin') {
-            $tasks = Task::with(['users', 'team', 'project'])->get();
-        } elseif ($role == 'owner') {
-            $tasks = Task::whereHas('team', function ($query) {
-                $query->where('owner_id', auth()->id());
-            })->with(['users', 'team', 'project'])->get();
-        } else {
-            $tasks = Task::whereHas('users', function ($query) {
-                $query->where('user_id', auth()->id());
-            })->orWhereHas('team', function ($query) {
-                $query->whereHas('users', function ($query) {
-                    $query->where('user_id', auth()->id());
-                });
-            })->with(['users', 'team', 'project'])->get();
-        }
-
-        return view('tasks.index', compact('tasks', 'role'));
+        $tasks = Task::with(['users', 'team', 'project', 'files'])->get();
+        return view('tasks.index', compact('tasks'));
     }
 
     public function show(Task $task)
     {
-        $task->load(['users', 'team', 'project', 'comments.user', 'activityLogs.user']);
+        $task->load(['users', 'team', 'project', 'comments.user', 'files']);
         $role = auth()->user()->getRoleNames()->first();
 
         return view('tasks.show', compact('task', 'role'));
@@ -44,28 +31,77 @@ class TaskController extends Controller
     {
         $request->validate([
             'content' => 'required|string|max:255',
-            'file' => 'nullable|file|max:2048',
+            'files.*' => 'nullable|file|max:2048',
         ]);
 
-        $comment = new Comment();
-        $comment->task_id = $task->id;
-        $comment->project_id = $task->project_id; 
-        $comment->user_id = $request->user()->id;
-        $comment->content = $request->input('content');
+        $comment = Comment::create([
+            'task_id' => $task->id,
+            'user_id' => Auth::id(),
+            'content' => $request->input('content')
+        ]);
 
-        if ($request->hasFile('file')) {
-            $comment->file_path = $request->file('file')->store('comments');
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $slug = Str::slug(pathinfo($fileName, PATHINFO_FILENAME)) . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $filePath = Storage::disk('s3')->putFileAs('files', $file, $slug);
+
+                File::create([
+                    'comment_id' => $comment->id,
+                    'name' => $fileName,
+                    'slug' => $slug,
+                    'url' => Storage::disk('s3')->url($filePath),
+                    'user_id' => Auth::id(),
+                ]);
+            }
         }
 
-        $comment->save();
-
-       
         ActivityLog::create([
             'task_id' => $task->id,
-            'user_id' => $request->user()->id,
+            'user_id' => Auth::id(),
             'description' => 'Added a comment: ' . $comment->content,
         ]);
 
         return redirect()->back()->with('success', 'Comment added successfully.');
+    }
+
+    public function uploadFolder(Request $request, Task $task)
+    {
+        $request->validate([
+            'files.*' => 'file|max:2048',
+        ]);
+
+        if ($request->hasFile('files')) {
+            foreach ($request->file('files') as $file) {
+                $fileName = time() . '_' . $file->getClientOriginalName();
+                $slug = Str::slug(pathinfo($fileName, PATHINFO_FILENAME)) . '-' . time() . '.' . $file->getClientOriginalExtension();
+                $filePath = Storage::disk('s3')->putFileAs('files', $file, $slug);
+
+                File::create([
+                    'task_id' => $task->id,
+                    'name' => $fileName,
+                    'slug' => $slug,
+                    'url' => Storage::disk('s3')->url($filePath),
+                    'user_id' => Auth::id(),
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Folder uploaded successfully.');
+    }
+
+    public function completeTask(Request $request, Task $task)
+    {
+        $task->is_completed = true;
+        $task->end_time = now();
+        $task->save();
+
+        ActivityLog::create([
+            'task_id' => $task->id,
+            'user_id' => Auth::id(),
+            'description' => 'Completed the task: ' . $task->name,
+        ]);
+
+        return redirect()->back()->with('success', 'Task completed successfully.');
     }
 }

@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->integer('user_id')->unsigned();
             $table->integer('team_id')->unsigned();
-           
             $table->enum('type', ['invite', 'request']);
             $table->string('email');
             $table->string('accept_token');
