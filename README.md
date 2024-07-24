@@ -1,3 +1,20 @@
+
+A project that is based on team communication and a correct project that can have several teams and each team has a specific task, and each team member has a more specific task.
+
+
+1.mysql 
+2.filament
+3.tailwind 
+4.restfull api 
+
+
+
+
+
+
+
+
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">
