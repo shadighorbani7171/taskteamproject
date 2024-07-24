@@ -7,6 +7,8 @@ A project that is based on team communication and a correct project that can hav
 3.tailwind 
 4.restfull api 
 
+5.I used amazon s3 to store files and photos
+
 
 
 
