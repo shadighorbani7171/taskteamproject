@@ -1,175 +1,86 @@
 <!-- resources/views/tasks/show.blade.php -->
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-2xl text-white bg-blue-500 p-4 rounded-md shadow-md leading-tight">
             {{ __('Task Details') }}
         </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
-                <div class="p-6 bg-white border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">{{ $task->name }}</h3>
-                    <p class="text-gray-600">{{ $task->description }}</p>
-
-                    <div class="mt-4">
-                        <span class="text-sm font-medium text-gray-700">Team Members:</span>
-                        <div class="flex items-center">
-                            @foreach($task->users as $user)
-                                <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full border-2 border-white -ml-2">
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <span class="text-sm font-medium text-gray-700">Project:</span>
-                        <p class="text-gray-600">{{ $task->project ? $task->project->name : 'No project assigned' }}</p>
-                    </div>
-
-                    <div class="mt-4">
-                        <span class="text-sm font-medium text-gray-700">Start Time:</span>
-                        <p class="text-gray-600">{{ $task->start_time }}</p>
-                    </div>
-
-                    <div class="mt-4">
-                        <span class="text-sm font-medium text-gray-700">End Time:</span>
-                        <p class="text-gray-600">{{ $task->end_time ?? 'Not set' }}</p>
-                    </div>
-
-                    <div class="mt-4">
-                        <span class="text-sm font-medium text-gray-700">Status:</span>
-                        <p class="text-gray-600">{{ $task->is_completed ? 'Completed' : 'In Progress' }}</p>
-                    </div>
-
-                    <div class="mt-4">
-                        @if($task->subtasks->count() > 0)
-                            <div class="flex items-center">
-                                <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                                    <div class="bg-green-500 h-2.5 rounded-full" style="width: {{ ($task->subtasks->where('is_completed', true)->count() / $task->subtasks->count()) * 100 }}%"></div>
-                                </div>
-                                <span class="ml-2 text-gray-600">{{ $task->subtasks->where('is_completed', true)->count() }}/{{ $task->subtasks->count() }}</span>
-                            </div>
-                        @else
-                            <span class="text-gray-600">No subtasks available</span>
-                        @endif
-                    </div>
-
-                    <div class="mt-6">
-                        <div class="flex space-x-4">
-                            <button class="text-gray-600 border-b-2 border-gray-800 pb-1">Tasks</button>
-                            <button class="text-gray-600 pb-1">Files</button>
-                            <button class="text-gray-600 pb-1">Activity</button>
-                        </div>
-                    </div>
-
-                    <div class="mt-6">
-                        <h4 class="text-lg font-medium text-gray-900">{{ __('Comments') }}</h4>
-                        <div>
-                            @foreach($task->comments as $comment)
-                                <div class="flex items-start mt-4">
-                                    <img src="{{ $comment->user->profile_photo_url }}" alt="{{ $comment->user->name }}" class="w-10 h-10 rounded-full">
-                                    <div class="ml-4">
-                                        <p class="text-sm text-gray-600">
-                                            <strong>{{ $comment->user->name }}:</strong> {{ $comment->content }}
-                                            @if($comment->files->count() > 0)
-                                                <br>
-                                                <strong>Attachments:</strong>
-                                                <ul>
-                                                    @foreach($comment->files as $file)
-                                                        <li><a href="{{ $file->url }}" target="_blank">{{ $file->name }}</a></li>
-                                                    @endforeach
-                                                </ul>
-                                            @endif
-                                        </p>
-                                        <p class="text-xs text-gray-500">{{ $comment->created_at->diffForHumans() }}</p>
+    <div class="py-12 bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 min-h-screen flex flex-col items-center justify-center relative">
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full mx-auto lg:max-w-7xl mb-8">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4 text-center">{{ $task->name }}</h2>
+            <p class="text-lg text-gray-600 mt-2 text-center">{{ $task->description }}</p>
+            
+            <div class="flex flex-col lg:flex-row mt-6 space-y-8 lg:space-y-0 lg:space-x-4">
+                <!-- Project Information -->
+                <div class="w-full lg:w-1/2 lg:flex lg:items-center lg:justify-center -mt-4">
+                    <div class="w-full lg:w-4/5 text-left">
+                        <h4 class="text-xl font-medium text-gray-900 mb-4">{{ __('Project Information') }}</h4>
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <div class="mt-8">
+                                        <h3 class="text-2xl font-semibold text-gray-800 mb-4">{{ __('Team Members') }}</h3>
+                                        <div class="flex items-center space-x-4">
+                                            @foreach($task->team->users as $user)
+                                            <div class="relative group">
+                                                <div class="absolute z-10 invisible group-hover:visible px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 dark:bg-gray-700">
+                                                    {{ $user->name }}
+                                                    <div class="tooltip-arrow" data-popper-arrow></div>
+                                                </div>
+                                                <img src="{{ $user->profile_photo_url }}" alt="{{ $user->name }}" class="w-8 h-8 rounded-full border-2 border-white shadow-lg">
+                                            </div>
+                                            @endforeach
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Project</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ $task->project ? $task->project->name : 'No project assigned' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Start Time</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ $task->start_time }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">End Time</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ $task->end_time ?? 'Not set' }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Status</td>
+                                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500">{{ $task->is_completed ? 'Completed' : 'In Progress' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+                </div>
 
-                    <div class="mt-6">
-                        <h4 class="text-lg font-medium text-gray-900">{{ __('Files') }}</h4>
-                        <ul>
-                            @foreach($task->files as $file)
-                                <li>
-                                    <a href="{{ $file->url }}" target="_blank">{{ $file->name }}</a>
-                                </li>
-                            @endforeach
-                        </ul>
+                <!-- Subtasks with priorities and IDs -->
+                <div class="w-full lg:w-1/2 relative lg:pl-8">
+                    <div class="absolute top-0 left-0 transform -translate-x-full w-0.5 h-full bg-gray-300"></div> <!-- Line moved to the left side -->
+                    <h4 class="text-xl font-medium text-gray-900 mb-4">{{ __('Sub Tasks') }}</h4>
+                    @foreach ($task->subtasks as $index => $subtask)
+                    <div class="relative z-10 flex items-center mb-8">
+                        <div class="flex items-center justify-center w-8 h-8 bg-purple-500 text-white rounded-full">{{ $index + 1 }}</div>
+                        <div class="ml-4 text-gray-700">{{ $subtask->name }} with {{ $subtask->user->name }}</div>
                     </div>
-
-                    <div class="mt-6">
-                        <form id="uploadForm" action="{{ route('tasks.uploadFolder', $task) }}" method="post" enctype="multipart/form-data">
-                            @csrf
-                            <label for="picker">Select folder to upload:</label>
-                            <input type="file" id="picker" webkitdirectory multiple class="mt-2">
-                            <input type="submit" value="Upload Folder" name="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-                        </form>
-                    </div>
-
-                    <div class="mt-6">
-                        <form id="commentUploadForm" action="{{ route('tasks.addComment', $task) }}" method="post" enctype="multipart/form-data">
-                            @csrf
-                            <label for="commentPicker">Select file to upload with comment:</label>
-                            <input type="file" id="commentPicker" multiple class="mt-2">
-                            <textarea name="content" rows="2" class="w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" placeholder="Add a new comment..."></textarea>
-                            <input type="submit" value="Add Comment" name="submit" class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
-                        </form>
-                    </div>
+                    @endforeach
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        document.getElementById('picker').addEventListener('change', function(e) {
-            const form = document.getElementById('uploadForm');
-            const formData = new FormData(form);
-            
-            for (let i = 0; i < this.files.length; i++) {
-                let file = this.files[i];
-                formData.append('files[]', file, file.webkitRelativePath);
-            }
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            }).then(response => {
-                  location.reload(); // Reload the page to show the uploaded files
-              }).catch(error => {
-                  console.error(error);
-              });
-            
-            e.preventDefault();
-        });
+        <!-- Progress Bar -->
+        <div class="bg-white p-8 rounded-lg shadow-lg w-full mx-auto lg:max-w-7xl mb-8">
+            <h4 class="text-xl font-medium text-gray-900 mb-4">{{ __('Progress') }}</h4>
+            <div class="flex justify-between mb-1">
+                <span class="text-base font-medium text-blue-700 dark:text-white">{{ $task->name }}</span>
+                <span class="text-sm font-medium text-blue-700 dark:text-white">{{ $task->progress }}%</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $task->progress }}%"></div>
+            </div>
+        </div>
 
-        document.getElementById('commentPicker').addEventListener('change', function(e) {
-            const form = document.getElementById('commentUploadForm');
-            const formData = new FormData(form);
-            
-            for (let i = 0; i < this.files.length; i++) {
-                let file = this.files[i];
-                formData.append('files[]', file);
-            }
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                }
-            }).then(response => {
-                  location.reload(); // Reload the page to show the uploaded files and comments
-              }).catch(error => {
-                  console.error(error);
-              });
-            
-            e.preventDefault();
-        });
-    </script>
+        <!-- Activity Logs -->
+       
 </x-app-layout>

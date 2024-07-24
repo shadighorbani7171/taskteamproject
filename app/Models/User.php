@@ -111,6 +111,10 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->hasMany(Subtask::class, 'user_id');
     }
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_user', 'user_id', 'project_id');
+    }
     
      
     // Rest omitted for brevity

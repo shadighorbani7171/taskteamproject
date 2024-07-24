@@ -15,7 +15,7 @@ class UserController extends Controller
 
     public function show(User $user)
     {
-        $user->load('teams', 'tasks');
+        $user->load(['teams', 'tasks.project', 'projects']);
         return view('users.show', compact('user'));
     }
 }

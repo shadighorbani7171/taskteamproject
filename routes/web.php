@@ -14,6 +14,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\MemberDashboardController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\FileController;
 
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ResourceAllocationController;
@@ -75,8 +76,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
         Route::get('/tasks', [TaskController::class, 'index'])->name('tasks.index');
         Route::get('/tasks/{task}', [TaskController::class, 'show'])->name('tasks.show');
-        Route::post('/tasks/{task}/comments', [TaskController::class, 'addComment'])->name('tasks.addComment');
-        Route::post('/tasks/{task}/upload-folder', [TaskController::class, 'uploadFolder'])->name('tasks.uploadFolder');
+        
+        // Adding comments and viewing task files
+        Route::post('/tasks/{task}/comments', [FileController::class, 'addComment'])->name('tasks.addComment');
+        Route::post('/tasks/{task}/upload-file', [FileController::class, 'uploadFile'])->name('tasks.uploadFile');
+        Route::get('/tasks/{task}/files', [FileController::class, 'show'])->name('tasks.files');
     });
    
     Route::resource('users',UserController::class);

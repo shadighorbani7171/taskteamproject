@@ -19,8 +19,10 @@ class OwnerDashboardController extends Controller
 
         $teamCount = $teams->count();
         $projectCount = $projects->count();
-        $taskCount = Task::whereHas('users', function ($query) {
-            $query->whereIn('users.id', auth()->user()->teams->pluck('users.id')->flatten());
+
+        // اصلاح کوئری شمارش وظایف
+        $taskCount = Task::whereHas('team', function ($query) {
+            $query->where('owner_id', auth()->id());
         })->count();
 
         return view('ownerdashboard', compact('teams', 'projects', 'teamCount', 'projectCount', 'taskCount'));

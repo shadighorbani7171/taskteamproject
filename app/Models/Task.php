@@ -9,7 +9,16 @@ use Carbon\Carbon;
 class Task extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'description','team_id','project_id' ,'start_time', 'end_time', 'is_completed'];
+    protected $fillable = [
+        'name',
+        'description',
+        'team_id',
+        'project_id',
+        'start_time',
+        'end_time',
+        'is_completed',
+        'progress'
+    ];
   
     protected static function boot()
     {

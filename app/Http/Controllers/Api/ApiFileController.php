@@ -1,22 +1,26 @@
 <?php
 
-namespace App\Http\Controllers;
+
+
+
+namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
 use App\Models\File;
 use App\Models\Comment;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 
-class FileController extends Controller
+class ApiFileController extends Controller
 {
     public function show(Task $task)
     {
         $comments = Comment::where('task_id', $task->id)->get();
         $files = File::where('task_id', $task->id)->get();
-        return view('tasks.files', compact('task', 'comments', 'files'));
+        return response()->json(['task' => $task, 'comments' => $comments, 'files' => $files], 200);
     }
 
     public function uploadFile(Request $request, Task $task)
@@ -38,9 +42,11 @@ class FileController extends Controller
                 'url' => Storage::disk('s3')->url($filePath),
                 'user_id' => Auth::id(),
             ]);
+
+            return response()->json(['message' => 'File uploaded successfully.'], 201);
         }
 
-        return redirect()->back()->with('success', 'File uploaded successfully.');
+        return response()->json(['message' => 'No file uploaded.'], 400);
     }
 
     public function addComment(Request $request, Task $task)
@@ -55,6 +61,6 @@ class FileController extends Controller
             'content' => $request->content,
         ]);
 
-        return redirect()->back()->with('success', 'Comment added successfully.');
+        return response()->json(['message' => 'Comment added successfully.'], 201);
     }
 }

@@ -45,8 +45,7 @@ class AllocationResource extends FilamentResource
                 TextInput::make('quantity')
                     ->required()
                     ->numeric()
-                    ->minValue(1)
-                    ->maxValue(fn (callable $get) => Resource::find($get('resource_id'))->available_quantity ?? 0),
+                   
             ]);
     }
 
@@ -58,9 +57,7 @@ class AllocationResource extends FilamentResource
                     ->label('Resource Name')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('resource.available_quantity')
-                    ->label('Available Quantity')
-                    ->sortable(),
+                
                 TextColumn::make('project.name')
                     ->label('Project Name')
                     ->sortable()
