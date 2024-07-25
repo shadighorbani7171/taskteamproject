@@ -80,6 +80,8 @@
                 <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ $task->progress }}%"></div>
             </div>
         </div>
+                <a href="{{ route('tasks.files', $task) }}" class="absolute bottom-4 right-4 bg-orange-500 text-white px-4 py-2 rounded-md">Files</a> <!-- Positioned Files section with URL -->
+
 
         <!-- Activity Logs -->
        
