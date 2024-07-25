@@ -25,4 +25,12 @@ class File extends Model
     {
         return $this->belongsTo(Comment::class);
     }
+     public function getTemporaryUrlAttribute()
+    {
+        if ($this->url) {
+            return Storage::disk('s3')->temporaryUrl($this->url, now()->addDays(1));
+        }
+
+        return null;
+    }
 }
