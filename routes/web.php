@@ -50,14 +50,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         $user = auth()->user();
         $role = $user->getRoleNames()->first();
 
-        switch ($role) {
-            case 'super_admin':
-                return redirect()->route('admin.dashboard');
-            case 'owner':
-                return redirect()->route('owner.dashboard');
-            default:
-                return view('dashboard');
-        }
+        return match ($role) {
+            'super_admin' => redirect()->route('admin.dashboard'),
+            'owner' => redirect()->route('owner.dashboard'),
+            default => view('dashboard'),
+        };
     })->name('dashboard');
 
     Route::middleware(['role:super_admin'])->group(function () {
